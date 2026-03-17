@@ -1,40 +1,74 @@
-# News Monitor Skill
+---
+name: news-monitor
+description: "Deliver curated news briefing for 6 topics: tech, AI, finance, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "📰",
+        "requires": { "bins": ["python3"] },
+      },
+  }
+---
 
-## Purpose
-Monitor official news in 6 topics: tech, AI, finance, blockchain, tennis (Alcaraz), soccer (Barcelona). Deliver curated summaries to Telegram at 7:30 AM, 1 PM, 7 PM, and 10 PM SGT.
+# News Monitor
 
-## Topics
-- Tech: Hardware, software, startups, gadgets
-- AI: Research, models, applications, ethics
-- Finance: Markets, economy, banking, fintech
-- Blockchain: Crypto, DeFi, NFTs, Web3
-- Tennis: Carlos Alcaraz tournament results, news
-- Soccer: FC Barcelona matches, transfers, news
+Fetches news from official RSS feeds only — no junk or fake news. Topics: Tech, AI, Finance, Blockchain, Tennis (Alcaraz), Soccer (Barcelona). Delivers to Telegram via two messages (3 topics each).
 
-## Sources
-Use only reputable sources (Financial Times, The Economist, Bloomberg, Barron's, Reuters, TechCrunch, The Verge, CoinDesk, ESPN, etc.). Perform fact-checking before inclusion.
+## Topics & Sources
 
-## Delivery Schedule
-- 7:30 AM SGT (daily)
-- 1:00 PM SGT (daily)
-- 7:00 PM SGT (daily)
-- 10:00 PM SGT (daily)
+| Topic | Sources |
+|-------|---------|
+| Tech | TechCrunch, The Verge, Ars Technica, Wired |
+| AI | VentureBeat, The Verge AI, MIT Tech Review, Ars Technica |
+| Finance | Reuters Business, CNBC, MarketWatch |
+| Blockchain | CoinDesk, CoinTelegraph, Decrypt, TheBlock |
+| Tennis (Alcaraz) | ESPN Tennis, BBC Sport Tennis |
+| Soccer (Barcelona) | ESPN Soccer, BBC Sport Football, Goal.com |
 
-## Output Format
-Telegram message with:
-- Topic headings
-- 2-3 key headlines per topic
-- Brief summary (1-2 sentences)
-- Source attribution
-- Fact-check indicator
+**Credibility:** ✅ = Tier-1 (Reuters, BBC, ESPN, CNBC, AP) | ✓ = Tier-2 (TechCrunch, CoinDesk, etc.)
 
-## Fact-Checking
-Cross-reference news across multiple reputable sources before inclusion. Flag unverified claims.
+## Execution
 
-## Dependencies
-- web_search: For news discovery
-- web_fetch: For article content extraction
-- Telegram API: For delivery
+Map the user's request to a session:
 
-## Configuration
-Update topics/specific interests in this file as needed.
+| Request | Session |
+|---------|---------|
+| morning briefing / 7:30 AM | `morning` |
+| afternoon / midday / 1 PM | `afternoon` |
+| evening / 7 PM | `evening` |
+| night / 10 PM | `night` |
+
+Run the news monitor:
+```bash
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py [session]
+```
+
+Examples:
+```bash
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morning
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py afternoon
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py evening
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py night
+```
+
+Dry-run (no Telegram send, just print):
+```bash
+python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morning --test
+```
+
+## Delivery Schedule (SGT = UTC+8)
+
+| Time SGT | Session | Cron (UTC) |
+|----------|---------|------------|
+| 7:30 AM  | morning   | `30 23 * * *` |
+| 1:00 PM  | afternoon | `0 5 * * *`   |
+| 7:00 PM  | evening   | `0 11 * * *`  |
+| 10:00 PM | night     | `0 14 * * *`  |
+
+## Cron Names
+
+- `news-morning`
+- `news-afternoon`
+- `news-evening`
+- `news-night`

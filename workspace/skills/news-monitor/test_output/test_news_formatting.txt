@@ -1,6 +1,6 @@
 Running news monitor test...
 === TEST NEWS SUMMARY ===
-Time: 2026-03-18 01:57:57 SGT
+Time: 2026-03-18 02:24:25 SGT
 Delivery: Test Run
 
 ### Tech
