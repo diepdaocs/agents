@@ -12,7 +12,7 @@ Monitor official news in 6 topics: tech, AI, finance, blockchain, tennis (Alcara
 - Soccer: FC Barcelona matches, transfers, news
 
 ## Sources
-Use only reputable sources (Reuters, Bloomberg, TechCrunch, The Verge, CoinDesk, ESPN, etc.). Perform fact-checking before inclusion.
+Use only reputable sources (Financial Times, The Economist, Bloomberg, Barron's, Reuters, TechCrunch, The Verge, CoinDesk, ESPN, etc.). Perform fact-checking before inclusion.
 
 ## Delivery Schedule
 - 7:30 AM SGT (daily)

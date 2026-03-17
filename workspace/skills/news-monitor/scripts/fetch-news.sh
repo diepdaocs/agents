@@ -8,12 +8,12 @@ SOURCES=("tech" "ai" "finance" "blockchain" "tennis" "soccer")
 
 # Search queries for each topic
 QUERIES=(
-  "tech news latest site:reuters.com OR site:techcrunch.com OR site:theverge.com"
-  "AI news latest site:bloomberg.com OR site:arstechnica.com OR site:venturebeat.com"
-  "finance news latest site:bloomberg.com OR site:reuters.com OR site:marketwatch.com"
-  "blockchain crypto news latest site:coindesk.com OR site:cointelegraph.com OR site:decrypt.co"
-  "Carlos Alcaraz tennis news latest site:espn.com OR site:atptour.com OR site:tennis.com"
-  "FC Barcelona soccer news latest site:espn.com OR site:fcbarcelona.com OR site:diariogol.com"
+  "tech news latest site:ft.com OR site:bloomberg.com OR site:barrons.com OR site:techcrunch.com OR site:theverge.com"
+  "AI news latest site:ft.com OR site:bloomberg.com OR site:barrons.com OR site:arstechnica.com OR site:venturebeat.com"
+  "finance news latest site:ft.com OR site:bloomberg.com OR site:barrons.com OR site:reuters.com OR site:marketwatch.com"
+  "blockchain crypto news latest site:ft.com OR site:bloomberg.com OR site:barrons.com OR site:coindesk.com OR site:cointelelect.com OR site:decrypt.co"
+  "Carlos Alcaraz tennis news latest site:espn.com OR site:atptour.com OR site:tennis.com OR site:ft.com OR site:bloomberg.com"
+  "FC Barcelona soccer news latest site:espn.com OR site:fcbarcelona.com OR site:diariogol.com OR site:ft.com OR site:bloomberg.com"
 )
 
 # Function to fetch news for a topic
