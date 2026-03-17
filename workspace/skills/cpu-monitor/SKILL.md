@@ -1,6 +1,6 @@
 ---
 name: cpu-monitor
-description: Monitor PC CPU usage and alert if it exceeds a specified threshold. Use when: (1) You need to regularly check CPU load, (2) Receive alerts for high CPU usage (e.g., >95%), (3) Set up periodic performance checks.
+description: "Monitor PC CPU usage and alert if it exceeds a threshold. Use when: (1) You need to regularly check CPU load, (2) Receive alerts for high CPU usage, (3) Set up periodic performance checks."
 metadata:
   {
     "openclaw":
