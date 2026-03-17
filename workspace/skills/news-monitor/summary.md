@@ -1,6 +1,6 @@
 # News Monitor Skill - Summary
 
-## Files Created (Total: 11 files, ~10KB)
+## Files Created (Total: 12 files, ~11KB)
 
 ### Core Files
 - `SKILL.md` - Main skill definition (1.3KB)
@@ -8,6 +8,7 @@
 - `cron-jobs.md` - Scheduled delivery times (975 bytes)
 - `setup-complete.md` - Configuration status (734 bytes)
 - `summary.md` - File list and status (1.5KB)
+- `final-summary.md` - Complete overview (1.6KB)
 
 ### Scripts (all executable)
 - `scripts/fetch-news.sh` - News fetching logic (2KB)
