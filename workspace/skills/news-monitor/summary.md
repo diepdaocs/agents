@@ -17,6 +17,10 @@
 - `test-news.sh` - Mock news testing (1.8KB)
 - `test-setup.sh` - Setup verification (694 bytes)
 - `test-delivery.sh` - Telegram delivery test (1KB)
+- `test.sh` - Full test suite (1.4KB)
+
+### Test Output
+- `test_output/` - 7 test result files (429 bytes)
 
 ### Git Status
 - Committed to main branch
