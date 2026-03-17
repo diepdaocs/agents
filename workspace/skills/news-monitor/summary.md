@@ -7,6 +7,7 @@
 - `README.md` - Setup guide (744 bytes)
 - `cron-jobs.md` - Scheduled delivery times (975 bytes)
 - `setup-complete.md` - Configuration status (734 bytes)
+- `summary.md` - File list and status (1.5KB)
 
 ### Scripts (all executable)
 - `scripts/fetch-news.sh` - News fetching logic (2KB)
