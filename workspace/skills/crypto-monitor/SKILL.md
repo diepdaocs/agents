@@ -1,7 +1,14 @@
 ---
 name: crypto-monitor
-description: Monitor BTC, ETH, SOL portfolio. Alert via Telegram on macro/radical news that could move portfolio 10%+. Provide hedging strategies using futures/options based on volatility. Use when asked to check crypto portfolio, monitor markets, or assess macro crypto risk.
-metadata: {"openclaw": {"emoji": "₿", "requires": {"bins": ["python3"]}}}
+description: "Monitor BTC, ETH, SOL portfolio. Alert via Telegram on macro/radical news that could move portfolio 10%+. Provide hedging strategies using futures/options based on volatility. Use when asked to check crypto portfolio, monitor markets, or assess macro crypto risk."
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "₿",
+        "requires": { "bins": ["python3"] },
+      },
+  }
 ---
 
 # Crypto Portfolio Monitor
@@ -10,11 +17,14 @@ Monitors BTC, ETH, and SOL. Alerts the user via Telegram when macro or radical n
 
 ## Portfolio
 
-| Asset | Coins held | Notes |
-|-------|-----------|-------|
-| BTC   | —         | Update with actual holdings |
-| ETH   | —         | Update with actual holdings |
-| SOL   | —         | Update with actual holdings |
+| Asset | Value (USD) | Notes |
+|-------|-------------|-------|
+| BTC   | ~$2,000     | ~0.027 BTC at time of setup |
+| ETH   | ~$2,000     | ~0.86 ETH at time of setup |
+| SOL   | ~$2,000     | ~21.4 SOL at time of setup |
+| **Total** | **~$6,000** | Equal-weighted across 3 assets |
+
+> A 10% portfolio move = ~$600 swing. Alert threshold is set accordingly.
 
 ## Execution Steps
 
@@ -30,24 +40,29 @@ Run the news script to pull latest RSS headlines from CoinDesk, CoinTelegraph, D
 python3 ~/code/agents/workspace/skills/crypto-monitor/scripts/fetch_news.py
 ```
 
-### 3. Assess macro impact
+### 3. Calculate current portfolio value
+Use live prices from step 1 to estimate current total value:
+- BTC value = live BTC price × 0.027
+- ETH value = live ETH price × 0.86
+- SOL value = live SOL price × 21.4
+- Total and compare to $6,000 baseline
+
+### 4. Assess macro impact
 Analyze the news output. Focus on:
 - **Macro events**: Fed rate decisions, CPI/inflation data, GDP, geopolitical events, war/sanctions
 - **Regulatory**: SEC actions, ETF approvals/rejections, country bans, Congressional hearings
 - **Institutional**: Major fund inflows/outflows, Blackrock/Fidelity moves, sovereign adoption
 - **Radical/Black swan**: Exchange hacks, major stablecoin depegs, protocol exploits, whale liquidations, key protocol forks
 
-### 4. Alert threshold
-Only send a Telegram alert if you assess **≥50% probability** that a news event could move the portfolio by **±10% or more** within 24–72 hours.
+### 5. Alert threshold
+Only send a Telegram alert if you assess **≥50% probability** that a news event could move the portfolio by **±$600 or more** (±10% of ~$6,000) within 24–72 hours.
 
-If threshold is met, send via:
+Send via:
 ```bash
 openclaw sessions send --message "YOUR_ALERT" --session-key "telegram:6202550149"
 ```
 
-### 5. Alert message format
-Structure the Telegram alert as:
-
+### 6. Alert message format
 ```
 🚨 CRYPTO ALERT — [Event Type]
 
@@ -56,53 +71,44 @@ Structure the Telegram alert as:
 📊 Direction: [Bullish / Bearish / Uncertain]
 
 📈 Portfolio Snapshot:
-  BTC: $X  (24h: X%)
-  ETH: $X  (24h: X%)
-  SOL: $X  (24h: X%)
+  BTC: $X  (24h: X%)  →  ~$X value
+  ETH: $X  (24h: X%)  →  ~$X value
+  SOL: $X  (24h: X%)  →  ~$X value
+  Total: ~$X  (baseline: $6,000)
   Fear & Greed: X/100
 
 🛡️ Hedging Strategies:
 
 [CONSERVATIVE]
-• [Strategy 1 — e.g., buy BTC put options at X strike]
-• [Strategy 2 — e.g., reduce spot exposure by X%]
+• [Strategy 1]
+• [Strategy 2]
 
 [MODERATE]
-• [Strategy — e.g., short BTC perpetual futures with X% of portfolio notional]
-• [Options play — e.g., BTC put spread]
+• [Strategy]
 
 [AGGRESSIVE]
-• [Strategy — e.g., full short via futures, 2x leverage]
+• [Strategy]
 
 ⚡ Volatility: [LOW/MODERATE/HIGH/EXTREME] (7d std dev: X%)
 ```
 
 ## Hedging Strategy Guidelines
 
-Apply these based on volatility level and news direction:
+### Bearish macro (rate hike, ban, hack)
+- **Conservative**: Buy OTM puts on BTC/ETH (Deribit), 5–10% of portfolio notional (~$300–$600). Or reduce spot 20–30%.
+- **Moderate**: Short BTC/ETH perp futures (1–2x), hedging 30–50% of notional. Use tight stop at 5%.
+- **Aggressive**: Full short perp, or buy put spreads (buy ATM put, sell OTM put).
 
-### Bearish macro (e.g., rate hike, ban, hack)
-- **Conservative**: Buy OTM puts (BTC/ETH on Deribit), 5–10% portfolio notional. Or reduce spot 20–30%.
-- **Moderate**: Short BTC/ETH perp futures (1–2x), hedging 30–50% of notional exposure. Use tight stop at 5%.
-- **Aggressive**: Full short perp, or buy put spreads (buy ATM put, sell OTM put to reduce premium).
-
-### Bullish macro (e.g., ETF approval, Fed pivot, institutional buy)
-- **Conservative**: Add covered calls on existing holdings to generate yield while capping upside.
-- **Moderate**: Long BTC/ETH/SOL perp futures with 1.5–2x leverage on 20–30% of notional.
+### Bullish macro (ETF approval, Fed pivot, institutional buy)
+- **Conservative**: Add covered calls on existing holdings to generate yield.
+- **Moderate**: Long BTC/ETH/SOL perp futures with 1.5–2x leverage on 20–30% of notional (~$1,200–$1,800).
 - **Aggressive**: Call options (ATM or slightly OTM), 1–2 week expiry on Deribit.
 
 ### High uncertainty / volatile
-- **Straddle**: Buy both ATM call and put (expensive but captures large moves either way).
+- **Straddle**: Buy both ATM call and put — captures large moves either way.
 - **Strangle**: Buy OTM call + OTM put for cheaper premium, needs bigger move to profit.
-- **Reduce overall exposure**: Move 20–40% to stablecoins (USDC/USDT) until clarity.
+- **Reduce exposure**: Move 20–40% (~$1,200–$2,400) to stablecoins (USDC/USDT) until clarity.
 
 ### Low volatility / no clear catalyst
 - **Covered calls**: Sell OTM calls (10–15% above spot) to generate 1–3% monthly yield.
 - **Cash-secured puts**: Sell OTM puts to accumulate at lower prices with premium income.
-
-## Cron Schedule
-
-This skill is designed to run every 4 hours via:
-```bash
-openclaw cron add --name crypto-monitor --cron "0 */4 * * *" --message "Run the crypto-monitor skill: fetch portfolio data and news, assess macro impact, and send a Telegram alert if any news could move the portfolio by 10% or more. Include hedging strategies."
-```
