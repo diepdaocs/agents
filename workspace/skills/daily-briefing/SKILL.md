@@ -39,7 +39,7 @@ Assemble the briefing in this order, skipping sections with no content:
 1. **Weather** — current conditions + today's forecast for the user's location (from USER.md). Use `curl "wttr.in/{city}?format=3"`.
 2. **Memory highlights** — scan today's memory file (`memory/YYYY-MM-DD.md`) for anything flagged or unresolved.
 3. **Pending tasks** — check HEARTBEAT.md and any task lists mentioned in MEMORY.md.
-4. **Scheduled jobs** — run `openclaw cron list` and surface anything due today.
+4. **Scheduled jobs** — use the native `cron` tool (action: `list`) to fetch scheduled jobs and surface anything due today. Do NOT shell out to `openclaw cron list`.
 
 ## Format
 

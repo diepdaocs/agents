@@ -8,9 +8,9 @@ Notes about the human I'm working with. Updated as I learn more.
 
 **Pronouns:** <!-- optional -->
 
-**Timezone:** <!-- e.g. Asia/Ho_Chi_Minh, America/New_York -->
+**Timezone:** Asia/Singapore
 
-**Location:** <!-- City/country for weather, time-aware tasks -->
+**Location:** Singapore
 
 ## Context
 
