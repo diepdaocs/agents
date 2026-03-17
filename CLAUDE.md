@@ -18,16 +18,25 @@ openclaw gateway status
 openclaw agent "your message"
 
 # Install a skill from this repo
-openclaw skills install ./skills/<skill-name>
+openclaw skills install ./workspace/skills/<skill-name>
 
 # List all skills (shows which are ready vs missing deps)
 openclaw skills list
 
-# Health check (use --fix to auto-repair)
-openclaw doctor
+# Health check (use --repair to auto-fix)
+openclaw doctor --repair
 
 # Interactive setup
 openclaw configure
+
+# Cron jobs
+openclaw cron list
+openclaw cron add --name <name> --schedule "0 9 * * *" --message "your prompt"
+openclaw cron delete --name <name>
+
+# DM pairing (approve inbound Telegram/Discord pair requests)
+openclaw pairing list
+openclaw pairing approve <code>
 ```
 
 ## Architecture
@@ -51,13 +60,16 @@ Each skill is a directory containing a `SKILL.md` with YAML frontmatter and mark
 
 Frontmatter fields:
 - `name`, `description` — used for skill matching and `openclaw skills list`
-- `metadata.openclaw.emoji` — UI indicator
+- `metadata` — **must be a single-line JSON object** (parser limitation); e.g. `metadata: {"openclaw": {"emoji": "🌅", "requires": {"bins": ["curl"]}}}`
 - `metadata.openclaw.requires.bins` — binaries that must be present for the skill to be "ready"
 
 Optional subdirectories: `scripts/` (executable helpers), `references/` (large docs loaded on demand).
 
-### Config (`config/openclaw.example.json`)
-Template for `~/.openclaw/openclaw.json`. Contains gateway settings, model/auth profiles, and channel configuration. Copy and fill in API keys — never commit real tokens.
+### Config
+- Template: `config/openclaw.example.json`
+- Live config: `~/.openclaw/openclaw.json`
+
+Contains gateway settings, model/auth profiles, and channel configuration. Copy and fill in API keys — never commit real tokens.
 
 ## Skill Development
 
