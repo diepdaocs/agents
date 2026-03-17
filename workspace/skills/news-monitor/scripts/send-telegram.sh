@@ -3,8 +3,8 @@
 # Send news summary to Telegram
 
 # Telegram API endpoint and chat ID (configure these)
-TELEGRAM_API="https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
-CHAT_ID="<YOUR_CHAT_ID>"
+TELEGRAM_API="https://api.telegram.org/bot8625186050:AAGJ-BfSs3v4intvZCg7bH3fGE2SIV-oHcA/sendMessage"
+CHAT_ID="6202550149"
 
 # Function to send message
 send_message() {
