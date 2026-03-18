@@ -1,9 +1,0 @@
-Testing news monitor setup...
-✓ fetch-news.sh exists
-✓ send-telegram.sh exists
-✓ fetch-and-send.sh exists
-
-Setup complete. Next steps:
-1. Configure Telegram bot in send-telegram.sh
-2. Set up cron jobs from cron-jobs.md
-3. Test with: ./scripts/fetch-and-send.sh test
