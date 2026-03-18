@@ -53,9 +53,10 @@ def send_telegram(text):
 # ── Message builder ──────────────────────────────────────────────────────────
 
 GROUPS = [
-    (["tech", "ai", "hackernews"],      "Part 1 — Tech · AI · HackerNews"),
-    (["finance", "coffee", "blockchain"], "Part 2 — Finance · Coffee · Blockchain"),
-    (["tennis", "soccer"],               "Part 3 — Tennis · Soccer"),
+    (["hackernews", "engblogs"],          "Part 1 — HackerNews · Eng Blogs"),
+    (["tech", "ai"],                      "Part 2 — Tech · AI"),
+    (["finance", "coffee", "blockchain"], "Part 3 — Finance · Coffee · Blockchain"),
+    (["tennis", "soccer"],               "Part 4 — Tennis · Soccer"),
 ]
 
 

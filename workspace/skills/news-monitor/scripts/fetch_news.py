@@ -27,6 +27,8 @@ TIER2_SOURCES = {
     "Decrypt", "TheBlock", "The Block", "MarketWatch",
     "Hacker News", "Investing.com", "VnExpress",
     "Barrons", "Goal.com", "FC Barcelona",
+    "Google AI Blog", "Google Developers", "Meta Engineering",
+    "Microsoft Dev Blog", "OpenAI Blog", "Anthropic Blog",
 }
 
 TOPICS = {
@@ -108,6 +110,25 @@ TOPICS = {
         "keywords": [],
         "exclude": [],
     },
+    "engblogs": {
+        "label": "Engineering Blogs",
+        "emoji": "🛠️",
+        "feeds": [
+            ("Google AI Blog",     "https://blog.research.google/feeds/posts/default?alt=rss"),
+            ("Google Developers",  "https://developers.googleblog.com/feeds/posts/default?alt=rss"),
+            ("Meta Engineering",   "https://engineering.fb.com/feed/"),
+            ("Microsoft Dev Blog", "https://devblogs.microsoft.com/engineering-at-microsoft/feed/"),
+            ("OpenAI Blog",        "https://openai.com/news/rss.xml"),
+        ],
+        "keywords": [
+            "engineering", "infrastructure", "system", "architecture", "performance",
+            "scalability", "reliability", "open source", "research", "paper",
+            "model", "training", "deploy", "framework", "api", "sdk",
+            "machine learning", "distributed", "database", "compiler", "runtime",
+            "security", "benchmark", "optimization", "developer", "platform",
+        ],
+        "exclude": ["tennis", "soccer", "football", "basketball", "sports"],
+    },
     "coffee": {
         "label": "Coffee & Robusta Futures",
         "emoji": "☕",
@@ -146,8 +167,10 @@ TOPICS = {
         "label": "Soccer — FC Barcelona",
         "emoji": "⚽",
         "feeds": [
-            ("Goal.com",    "https://www.goal.com/feeds/en/news"),
-            ("FC Barcelona", "https://www.fcbarcelona.com/en/rss/news"),
+            ("Goal.com",           "https://www.goal.com/en/rss"),
+            ("FC Barcelona",       "https://www.fcbarcelona.com/en/rss"),
+            ("ESPN Soccer",        "https://www.espn.com/espn/rss/soccer/news"),
+            ("BBC Sport Football", "https://feeds.bbci.co.uk/sport/football/rss.xml"),
         ],
         "keywords": [
             "barcelona", "barca", "fc barcelona", "laliga", "la liga",
@@ -167,30 +190,74 @@ def _strip_html(text):
     return text.strip()
 
 
+_ATOM = "http://www.w3.org/2005/Atom"
+
+
 def fetch_feed(name, url):
     try:
         req = urllib.request.Request(url, headers=HEADERS)
         with urllib.request.urlopen(req, timeout=12) as resp:
             raw = resp.read()
         root = ET.fromstring(raw)
-        items = root.findall(".//item")[:MAX_PER_FEED]
         results = []
-        for item in items:
-            title = _strip_html(item.findtext("title") or "")
-            link  = (item.findtext("link") or "").strip()
-            desc  = _strip_html(item.findtext("description") or "")[:250]
-            pub   = (item.findtext("pubDate") or "").strip()
+
+        # RSS 2.0
+        items = root.findall(".//item")
+        if items:
+            for item in items[:MAX_PER_FEED]:
+                title = _strip_html(item.findtext("title") or "")
+                link  = (item.findtext("link") or "").strip()
+                desc  = _strip_html(item.findtext("description") or "")[:250]
+                pub   = (item.findtext("pubDate") or "").strip()
+                if title:
+                    results.append({"source": name, "title": title, "link": link,
+                                     "desc": desc, "pub": pub})
+            return results
+
+        # Atom
+        entries = root.findall(f"{{{_ATOM}}}entry")
+        for entry in entries[:MAX_PER_FEED]:
+            title = _strip_html(entry.findtext(f"{{{_ATOM}}}title") or "")
+            link_el = entry.find(f"{{{_ATOM}}}link[@rel='alternate']") or entry.find(f"{{{_ATOM}}}link")
+            link  = (link_el.get("href") if link_el is not None else "")
+            desc  = _strip_html(
+                entry.findtext(f"{{{_ATOM}}}summary") or
+                entry.findtext(f"{{{_ATOM}}}content") or ""
+            )[:250]
+            pub   = (entry.findtext(f"{{{_ATOM}}}published") or
+                     entry.findtext(f"{{{_ATOM}}}updated") or "").strip()
             if title:
                 results.append({"source": name, "title": title, "link": link,
                                  "desc": desc, "pub": pub})
         return results
+
     except Exception as e:
         print(f"[WARN] {name}: {e}", file=sys.stderr)
         return []
 
 
+def _fetch_hn_comments(story_id, max_comments=2):
+    """Fetch top-level comments for a HN story via Algolia items API."""
+    url = f"https://hn.algolia.com/api/v1/items/{story_id}"
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        comments = []
+        for child in (data.get("children") or []):
+            text = _strip_html(child.get("text") or "").strip()
+            author = child.get("author") or ""
+            if text and author and len(text) > 20:
+                comments.append({"author": author, "text": text[:180]})
+            if len(comments) >= max_comments:
+                break
+        return comments
+    except Exception:
+        return []
+
+
 def fetch_hn_top(max_items=10):
-    """Fetch top HN stories from Algolia front_page index."""
+    """Fetch top HN stories with article summary and top comments."""
     url = "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10"
     try:
         req = urllib.request.Request(url, headers=HEADERS)
@@ -203,16 +270,22 @@ def fetch_hn_top(max_items=10):
             points = hit.get("points") or 0
             num_comments = hit.get("num_comments") or 0
             hn_url = f"https://news.ycombinator.com/item?id={story_id}"
-            desc = f"▲ {points} pts · {num_comments} comments"
+            # story_text exists for Ask HN / Show HN posts
+            story_text = _strip_html(hit.get("story_text") or "")[:200].strip()
             if title:
                 results.append({
                     "source": "Hacker News",
                     "title": title,
                     "link": hn_url,
-                    "desc": desc,
+                    "desc": f"▲ {points} pts · {num_comments} comments",
                     "pub": "",
                     "hn_url": hn_url,
+                    "hn_story_text": story_text,
+                    "hn_story_id": story_id,
                 })
+        # Fetch comments only for the top MAX_PER_TOPIC stories (avoid slow requests)
+        for item in results[:MAX_PER_TOPIC]:
+            item["hn_comments"] = _fetch_hn_comments(item["hn_story_id"])
         return results
     except Exception as e:
         print(f"[WARN] HackerNews: {e}", file=sys.stderr)
@@ -321,6 +394,13 @@ def format_topic_html(topic_key, items):
             lines.append(f"\n• <b>{title}</b>")
             if desc:
                 lines.append(f"  {desc}")
+            # HN story body (Ask HN / Show HN posts)
+            story_text = item.get("hn_story_text", "")
+            if story_text:
+                lines.append(f"  <i>{esc(story_text[:150])}</i>")
+            # HN top comments
+            for c in item.get("hn_comments", []):
+                lines.append(f"  💬 <b>{esc(c['author'])}</b>: {esc(c['text'])}")
             lines.append(f"  <i>{tag} {source}</i>")
 
     return "\n".join(lines)

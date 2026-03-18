@@ -1,6 +1,6 @@
 ---
 name: news-monitor
-description: "Deliver curated news briefing for 8 topics: tech, AI, HackerNews top stories, finance, coffee/robusta futures, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
+description: "Deliver curated news briefing for 9 topics: HackerNews top stories, engineering blogs (Google/Meta/Microsoft/OpenAI/Anthropic), tech, AI, finance, coffee/robusta futures, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
 metadata:
   {
     "openclaw":
@@ -22,6 +22,7 @@ Fetches news from official RSS feeds and APIs only — no junk or fake news. Del
 | Tech | TechCrunch, The Verge, Ars Technica, Wired |
 | AI | VentureBeat, The Verge AI, MIT Tech Review, Ars Technica |
 | HackerNews | HN Algolia API (front_page top stories, scores + comment counts) |
+| Engineering Blogs | Google AI Blog, Google Developers, Meta Engineering, Microsoft Dev Blog, OpenAI Blog, Anthropic Blog |
 | Finance | The Economist, Bloomberg, Barron's |
 | Coffee & Robusta Futures | Reuters Commodities, Reuters Business, Investing.com, VnExpress |
 | Blockchain | CoinDesk, CoinTelegraph, Decrypt, TheBlock |
@@ -34,9 +35,10 @@ Fetches news from official RSS feeds and APIs only — no junk or fake news. Del
 
 | Message | Topics |
 |---------|--------|
-| Part 1 | Tech · AI · HackerNews |
-| Part 2 | Finance · Coffee & Robusta Futures · Blockchain |
-| Part 3 | Tennis · Soccer |
+| Part 1 | HackerNews · Engineering Blogs |
+| Part 2 | Tech · AI |
+| Part 3 | Finance · Coffee & Robusta Futures · Blockchain |
+| Part 4 | Tennis · Soccer |
 
 ## Execution
 
