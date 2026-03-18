@@ -71,12 +71,12 @@ python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morn
 
 ## Delivery Schedule (SGT = UTC+8)
 
-| Time SGT | Session | Cron (UTC) |
-|----------|---------|------------|
-| 7:30 AM  | morning   | `30 23 * * *` |
-| 1:00 PM  | afternoon | `0 5 * * *`   |
-| 7:00 PM  | evening   | `0 11 * * *`  |
-| 10:00 PM | night     | `0 14 * * *`  |
+| Time SGT | Session | Cron (SGT local) |
+|----------|---------|------------------|
+| 7:30 AM  | morning   | `30 7 * * *`  |
+| 1:00 PM  | afternoon | `0 13 * * *`  |
+| 7:00 PM  | evening   | `0 19 * * *`  |
+| 10:00 PM | night     | `0 22 * * *`  |
 
 ## Cron Names
 
