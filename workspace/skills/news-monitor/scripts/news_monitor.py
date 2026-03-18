@@ -46,7 +46,7 @@ def send_telegram(text):
         TELEGRAM_API, data=payload,
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=20) as resp:
+    with urllib.request.urlopen(req, timeout=45) as resp:
         return json.loads(resp.read())
 
 

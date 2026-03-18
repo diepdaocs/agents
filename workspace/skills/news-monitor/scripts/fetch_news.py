@@ -246,6 +246,8 @@ def _fetch_hn_comments(story_id, max_comments=2):
         comments = []
         for child in (data.get("children") or []):
             text = _strip_html(child.get("text") or "").strip()
+            # Remove raw URLs to keep comment text clean in Telegram
+            text = re.sub(r"https?://\S+", "", text).strip()
             author = child.get("author") or ""
             if text and author and len(text) > 20:
                 comments.append({"author": author, "text": text[:180]})
@@ -391,7 +393,9 @@ def format_topic_html(topic_key, items):
             title = esc(item["title"])
             source = esc(item["source"])
             desc = esc(item["desc"][:120]) if item["desc"] else ""
-            lines.append(f"\n• <b>{title}</b>")
+            link = item.get("link", "").strip()
+            title_html = f'<a href="{link}">{title}</a>' if link else title
+            lines.append(f"\n• <b>{title_html}</b>")
             if desc:
                 lines.append(f"  {desc}")
             # HN story body (Ask HN / Show HN posts)
