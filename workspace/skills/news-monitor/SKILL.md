@@ -1,6 +1,6 @@
 ---
 name: news-monitor
-description: "Deliver curated news briefing for 6 topics: tech, AI, finance, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
+description: "Deliver curated news briefing for 8 topics: tech, AI, HackerNews top stories, finance, coffee/robusta futures, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
 metadata:
   {
     "openclaw":
@@ -13,7 +13,7 @@ metadata:
 
 # News Monitor
 
-Fetches news from official RSS feeds only — no junk or fake news. Topics: Tech, AI, Finance, Blockchain, Tennis (Alcaraz), Soccer (Barcelona). Delivers to Telegram via two messages (3 topics each).
+Fetches news from official RSS feeds and APIs only — no junk or fake news. Delivers to Telegram via three messages grouped by theme.
 
 ## Topics & Sources
 
@@ -21,12 +21,22 @@ Fetches news from official RSS feeds only — no junk or fake news. Topics: Tech
 |-------|---------|
 | Tech | TechCrunch, The Verge, Ars Technica, Wired |
 | AI | VentureBeat, The Verge AI, MIT Tech Review, Ars Technica |
-| Finance | Reuters Business, CNBC, MarketWatch |
+| HackerNews | HN Algolia API (front_page top stories, scores + comment counts) |
+| Finance | The Economist, Bloomberg, Barron's |
+| Coffee & Robusta Futures | Reuters Commodities, Reuters Business, Investing.com, VnExpress |
 | Blockchain | CoinDesk, CoinTelegraph, Decrypt, TheBlock |
 | Tennis (Alcaraz) | ESPN Tennis, BBC Sport Tennis |
-| Soccer (Barcelona) | ESPN Soccer, BBC Sport Football, Goal.com |
+| Soccer (Barcelona) | Goal.com, FC Barcelona Official |
 
-**Credibility:** ✅ = Tier-1 (Reuters, BBC, ESPN, CNBC, AP) | ✓ = Tier-2 (TechCrunch, CoinDesk, etc.)
+**Credibility:** ✅ = Tier-1 (Reuters, BBC, ESPN, CNBC, AP) | ✓ = Tier-2 (TechCrunch, CoinDesk, HN, etc.)
+
+## Message Groups
+
+| Message | Topics |
+|---------|--------|
+| Part 1 | Tech · AI · HackerNews |
+| Part 2 | Finance · Coffee & Robusta Futures · Blockchain |
+| Part 3 | Tennis · Soccer |
 
 ## Execution
 

@@ -52,11 +52,18 @@ def send_telegram(text):
 
 # ── Message builder ──────────────────────────────────────────────────────────
 
+GROUPS = [
+    (["tech", "ai", "hackernews"],      "Part 1 — Tech · AI · HackerNews"),
+    (["finance", "coffee", "blockchain"], "Part 2 — Finance · Coffee · Blockchain"),
+    (["tennis", "soccer"],               "Part 3 — Tennis · Soccer"),
+]
+
+
 def build_messages(session="morning"):
-    """Build 2 Telegram messages: topics 1-3 and topics 4-6."""
-    sgt_now    = datetime.now(SGT)
-    time_str   = sgt_now.strftime("%a %b %d %Y · %I:%M %p SGT")
-    label      = SESSION_LABELS.get(session, "📰 News Update")
+    """Build 3 Telegram messages grouped by theme."""
+    sgt_now  = datetime.now(SGT)
+    time_str = sgt_now.strftime("%a %b %d %Y · %I:%M %p SGT")
+    label    = SESSION_LABELS.get(session, "📰 News Update")
 
     header = (
         f"📰 <b>NEWS BRIEFING</b> · <b>{label}</b>\n"
@@ -67,11 +74,8 @@ def build_messages(session="morning"):
     print("Fetching news from RSS feeds...", file=sys.stderr)
     results = fetch_news.fetch_all()
 
-    topic_keys = list(fetch_news.TOPICS.keys())  # guaranteed order in 3.7+
-    first_half  = topic_keys[:3]   # tech, ai, finance
-    second_half = topic_keys[3:]   # blockchain, tennis, soccer
-
-    def build_half(keys, part_label):
+    messages = []
+    for keys, part_label in GROUPS:
         sections = []
         for k in keys:
             items = results.get(k, [])
@@ -79,11 +83,9 @@ def build_messages(session="morning"):
         body = sep.join(sections)
         msg  = header + f"<b>{part_label}</b>" + sep + body
         foot = f"\n{sep}<i>Official sources only · fact-checked ✅=Tier1 ✓=Tier2</i>"
-        return (msg + foot)[:4090]
+        messages.append((msg + foot)[:4090])
 
-    msg1 = build_half(first_half,  "Part 1 — Tech · AI · Finance")
-    msg2 = build_half(second_half, "Part 2 — Blockchain · Tennis · Soccer")
-    return msg1, msg2
+    return messages
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
@@ -94,29 +96,29 @@ def main():
     session = args[0] if args else "morning"
 
     try:
-        msg1, msg2 = build_messages(session)
+        messages = build_messages(session)
     except Exception as e:
         print(f"❌ Failed to build news message: {e}", file=sys.stderr)
         sys.exit(1)
 
+    total = len(messages)
+
     if dry_run:
-        print("\n" + "=" * 60)
-        print("MESSAGE 1:")
-        print(msg1)
-        print("\n" + "=" * 60)
-        print("MESSAGE 2:")
-        print(msg2)
+        for i, msg in enumerate(messages, 1):
+            print("\n" + "=" * 60)
+            print(f"MESSAGE {i}/{total}:")
+            print(msg)
         print("=" * 60)
         print("\n[DRY RUN] Telegram send skipped.", file=sys.stderr)
         return
 
     errors = 0
-    for i, msg in enumerate((msg1, msg2), 1):
+    for i, msg in enumerate(messages, 1):
         try:
             result = send_telegram(msg)
             if result.get("ok"):
                 mid = result.get("result", {}).get("message_id", "?")
-                print(f"✅ Message {i}/2 sent (message_id={mid})", file=sys.stderr)
+                print(f"✅ Message {i}/{total} sent (message_id={mid})", file=sys.stderr)
             else:
                 print(f"❌ Telegram error on msg {i}: {result}", file=sys.stderr)
                 errors += 1

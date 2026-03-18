@@ -2,6 +2,7 @@
 """Fetch news from reputable RSS feeds for 6 topics: tech, AI, finance, blockchain, tennis, soccer."""
 
 import html
+import json
 import re
 import sys
 import urllib.request
@@ -15,14 +16,17 @@ MAX_PER_TOPIC = 3
 
 # Source credibility tiers for fact-checking display
 TIER1_SOURCES = {
-    "Reuters", "Reuters Business", "BBC Sport", "BBC Sport Tennis", "BBC Sport Football",
+    "Reuters", "Reuters Business", "Reuters Commodities",
+    "BBC Sport", "BBC Sport Tennis", "BBC Sport Football",
     "BBC News", "ESPN", "ESPN Tennis", "ESPN Soccer", "CNBC", "AP News",
-    "Financial Times", "Bloomberg", "Associated Press",
+    "Financial Times", "Bloomberg", "Associated Press", "The Economist",
 }
 TIER2_SOURCES = {
     "TechCrunch", "The Verge", "The Verge AI", "Ars Technica", "Ars Technica AI",
     "Wired", "VentureBeat", "MIT Tech Review", "CoinDesk", "CoinTelegraph",
     "Decrypt", "TheBlock", "The Block", "MarketWatch",
+    "Hacker News", "Investing.com", "VnExpress",
+    "Barrons", "Goal.com", "FC Barcelona",
 }
 
 TOPICS = {
@@ -66,9 +70,9 @@ TOPICS = {
         "label": "Finance and Markets",
         "emoji": "📈",
         "feeds": [
-            ("Reuters Business", "https://feeds.reuters.com/reuters/businessNews"),
-            ("CNBC",            "https://www.cnbc.com/id/100003114/device/rss/rss.html"),
-            ("MarketWatch",     "https://feeds.content.dowjones.io/public/rss/mw_topstories"),
+            ("The Economist",  "https://www.economist.com/finance-and-economics/rss.xml"),
+            ("Bloomberg",      "https://feeds.bloomberg.com/markets/news.rss"),
+            ("Barrons",        "https://www.barrons.com/articles?type=article&format=rss"),
         ],
         "keywords": [
             "stock", "market", "economy", "gdp", "inflation", "interest rate", "fed ",
@@ -96,6 +100,33 @@ TOPICS = {
         ],
         "exclude": [],
     },
+    "hackernews": {
+        "label": "Hacker News",
+        "emoji": "🔶",
+        "custom_fetcher": "hackernews",
+        "feeds": [],
+        "keywords": [],
+        "exclude": [],
+    },
+    "coffee": {
+        "label": "Coffee & Robusta Futures",
+        "emoji": "☕",
+        "feeds": [
+            ("Reuters Commodities", "https://feeds.reuters.com/reuters/commoditiesNews"),
+            ("Reuters Business",    "https://feeds.reuters.com/reuters/businessNews"),
+            ("Investing.com",       "https://www.investing.com/rss/news_14.rss"),
+            ("VnExpress",           "https://e.vnexpress.net/rss/business.rss"),
+        ],
+        "keywords": [
+            "coffee", "robusta", "arabica", "coffee futures", "coffee price",
+            "coffee market", "coffee export", "coffee harvest", "coffee crop",
+            "vietnam coffee", "brazil coffee", "ice futures", "coffee trading",
+            "coffee supply", "coffee demand", "liffe", "coffee bean",
+            "coffee production", "coffee stocks", "soft commodities",
+        ],
+        "exclude": [],
+        "require_any": ["coffee", "robusta", "arabica"],
+    },
     "tennis": {
         "label": "Tennis — Alcaraz",
         "emoji": "🎾",
@@ -115,8 +146,8 @@ TOPICS = {
         "label": "Soccer — FC Barcelona",
         "emoji": "⚽",
         "feeds": [
-            ("ESPN Soccer",        "https://www.espn.com/espn/rss/soccer/news"),
-            ("BBC Sport Football", "https://feeds.bbci.co.uk/sport/football/rss.xml"),
+            ("Goal.com",    "https://www.goal.com/feeds/en/news"),
+            ("FC Barcelona", "https://www.fcbarcelona.com/en/rss/news"),
         ],
         "keywords": [
             "barcelona", "barca", "fc barcelona", "laliga", "la liga",
@@ -155,6 +186,36 @@ def fetch_feed(name, url):
         return results
     except Exception as e:
         print(f"[WARN] {name}: {e}", file=sys.stderr)
+        return []
+
+
+def fetch_hn_top(max_items=10):
+    """Fetch top HN stories from Algolia front_page index."""
+    url = "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10"
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read())
+        results = []
+        for hit in data.get("hits", [])[:max_items]:
+            title = (hit.get("title") or "").strip()
+            story_id = hit.get("objectID", "")
+            points = hit.get("points") or 0
+            num_comments = hit.get("num_comments") or 0
+            hn_url = f"https://news.ycombinator.com/item?id={story_id}"
+            desc = f"▲ {points} pts · {num_comments} comments"
+            if title:
+                results.append({
+                    "source": "Hacker News",
+                    "title": title,
+                    "link": hn_url,
+                    "desc": desc,
+                    "pub": "",
+                    "hn_url": hn_url,
+                })
+        return results
+    except Exception as e:
+        print(f"[WARN] HackerNews: {e}", file=sys.stderr)
         return []
 
 
@@ -215,6 +276,12 @@ def credibility_tag(item):
 
 def fetch_topic(topic_key):
     config = TOPICS[topic_key]
+
+    if config.get("custom_fetcher") == "hackernews":
+        items = fetch_hn_top(MAX_PER_FEED)
+        items = dedup(items)
+        return items[:MAX_PER_TOPIC]
+
     all_items = []
     for name, url in config["feeds"]:
         all_items.extend(fetch_feed(name, url))
