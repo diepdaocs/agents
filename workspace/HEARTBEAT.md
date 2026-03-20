@@ -10,4 +10,4 @@ Tasks to run on each heartbeat. Keep this empty (or comments only) to skip heart
 
 ## CPU Monitor
 - On system event "run_cpu_check": execute `~/code/agents/workspace/skills/cpu-monitor/scripts/monitor_cpu.sh`
-- Script alerts via Telegram if CPU > 50% threshold
+- Script alerts via Telegram if CPU > 30% threshold
