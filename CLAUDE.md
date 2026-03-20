@@ -152,14 +152,14 @@ Restart is required after: auth changes, plugin changes, channel config changes.
 
 | Skill | Trigger | Schedule |
 |-------|---------|----------|
-| `cpu-monitor` | CPU usage check | Every 5 min (cron) |
+| `cpu-monitor` | CPU usage check | Every 10 min (cron) |
 | `crypto-monitor` | Crypto portfolio + macro news | Every 4 hours (cron) |
 | `daily-briefing` | Morning digest | — |
 | `file-organizer` | File/directory cleanup | — |
 
 ### cpu-monitor
 - Script: `workspace/skills/cpu-monitor/scripts/monitor_cpu.sh`
-- Threshold: **30%** CPU usage
+- Threshold: **50%** CPU usage
 - Alerts to Telegram session key `telegram:6202550149`
 
 ### crypto-monitor

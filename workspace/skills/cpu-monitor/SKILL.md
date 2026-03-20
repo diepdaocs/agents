@@ -21,19 +21,19 @@ This skill provides a script and instructions to monitor your PC's CPU usage and
     The `monitor_cpu.sh` script (located in `scripts/`) will check the current CPU usage.
 
 2.  **Configuration**:
-    You can adjust the `CPU_THRESHOLD` within the `monitor_cpu.sh` script. The default is 95%.
+    You can adjust the `CPU_THRESHOLD` within the `monitor_cpu.sh` script. The default is 50%.
 
 3.  **Set up a Cron Job**:
-    To run the monitor every 5 minutes and receive alerts, set up a cron job.
+    To run the monitor every 10 minutes and receive alerts, set up a cron job.
     First, ensure the script is executable:
     ```bash
     chmod +x ~/code/agents/workspace/skills/cpu-monitor/scripts/monitor_cpu.sh
     ```
     Then, add the following line to your crontab (run `crontab -e`):
     ```cron
-    */5 * * * * /home/noname/code/agents/workspace/skills/cpu-monitor/scripts/monitor_cpu.sh
+    */10 * * * * /home/diepdao/code/agents/workspace/skills/cpu-monitor/scripts/monitor_cpu.sh
     ```
-    This will execute the script every 5 minutes. If the CPU usage is above the threshold, an alert will be sent to the current session.
+    This will execute the script every 10 minutes. If the CPU usage is above the threshold, an alert will be sent to the current session.
 
 ## `monitor_cpu.sh` Script Details
 
