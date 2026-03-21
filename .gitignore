@@ -8,3 +8,6 @@ workspace/skills/*/test_output/
 
 # Logs
 *.log
+
+# Workspace memory
+workspace/memory

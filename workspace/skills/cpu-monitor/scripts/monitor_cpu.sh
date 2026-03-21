@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-CPU_THRESHOLD=50 # Alert if CPU usage goes above this percentage
+CPU_THRESHOLD=70 # Alert if CPU usage goes above this percentage
 
 # Get current CPU usage (active percentage)
 # This command extracts the idle percentage from 'top' and subtracts it from 100
