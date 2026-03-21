@@ -29,6 +29,7 @@ TIER2_SOURCES = {
     "Barrons", "Goal.com", "FC Barcelona",
     "Google AI Blog", "Google Developers", "Meta Engineering",
     "Microsoft Dev Blog", "OpenAI Blog", "Anthropic Blog",
+    "Google News",
 }
 
 TOPICS = {
@@ -137,6 +138,7 @@ TOPICS = {
             ("Reuters Business",    "https://feeds.reuters.com/reuters/businessNews"),
             ("Investing.com",       "https://www.investing.com/rss/news_14.rss"),
             ("VnExpress",           "https://e.vnexpress.net/rss/business.rss"),
+            ("Google News",         "https://news.google.com/rss/search?q=robusta+coffee+price&hl=en-US&gl=US&ceid=US:en"),
         ],
         "keywords": [
             "coffee", "robusta", "arabica", "coffee futures", "coffee price",

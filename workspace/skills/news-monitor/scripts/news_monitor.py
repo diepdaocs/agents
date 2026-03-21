@@ -18,6 +18,35 @@ from datetime import datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fetch_news
 
+# ── Sent-links dedup cache ────────────────────────────────────────────────────
+SENT_CACHE_FILE = os.path.expanduser("~/.openclaw/news_cache/news_sent_links.json")
+SENT_CACHE_MAX  = 2000  # keep at most this many links to prevent unbounded growth
+
+
+def _load_sent_links():
+    try:
+        with open(SENT_CACHE_FILE) as f:
+            data = json.load(f)
+        return set(data) if isinstance(data, list) else set()
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
+
+
+def _save_sent_links(links: set):
+    os.makedirs(os.path.dirname(SENT_CACHE_FILE), exist_ok=True)
+    # Trim to most-recent SENT_CACHE_MAX by keeping a list in insertion order.
+    # Since we can't preserve order from a set, just truncate if oversized.
+    lst = list(links)
+    if len(lst) > SENT_CACHE_MAX:
+        lst = lst[-SENT_CACHE_MAX:]
+    with open(SENT_CACHE_FILE, "w") as f:
+        json.dump(lst, f)
+
+
+def _filter_new(items, sent_links):
+    """Return only items whose link has not been sent before."""
+    return [i for i in items if i.get("link") and i["link"] not in sent_links]
+
 # ── Telegram config ──────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = "8625186050:AAGJ-BfSs3v4intvZCg7bH3fGE2SIV-oHcA"
 TELEGRAM_CHAT_ID   = "6202550149"
@@ -61,7 +90,7 @@ GROUPS = [
 
 
 def build_messages(session="morning"):
-    """Build 3 Telegram messages grouped by theme."""
+    """Build Telegram messages grouped by theme. Returns (messages, new_links)."""
     sgt_now  = datetime.now(SGT)
     time_str = sgt_now.strftime("%a %b %d %Y · %I:%M %p SGT")
     label    = SESSION_LABELS.get(session, "📰 News Update")
@@ -75,18 +104,34 @@ def build_messages(session="morning"):
     print("Fetching news from RSS feeds...", file=sys.stderr)
     results = fetch_news.fetch_all()
 
+    sent_links = _load_sent_links()
+    new_links  = set()
+
+    # Filter each topic to only unseen items
+    filtered = {}
+    for topic_key, items in results.items():
+        fresh = _filter_new(items, sent_links)
+        filtered[topic_key] = fresh
+        for item in fresh:
+            if item.get("link"):
+                new_links.add(item["link"])
+
+    skipped = sum(len(v) - len(filtered[k]) for k, v in results.items())
+    if skipped:
+        print(f"[dedup] Skipped {skipped} already-sent item(s).", file=sys.stderr)
+
     messages = []
     for keys, part_label in GROUPS:
         sections = []
         for k in keys:
-            items = results.get(k, [])
+            items = filtered.get(k, [])
             sections.append(fetch_news.format_topic_html(k, items))
         body = sep.join(sections)
         msg  = header + f"<b>{part_label}</b>" + sep + body
         foot = f"\n{sep}<i>Official sources only · fact-checked ✅=Tier1 ✓=Tier2</i>"
         messages.append((msg + foot)[:4090])
 
-    return messages
+    return messages, new_links
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
@@ -97,7 +142,7 @@ def main():
     session = args[0] if args else "morning"
 
     try:
-        messages = build_messages(session)
+        messages, new_links = build_messages(session)
     except Exception as e:
         print(f"❌ Failed to build news message: {e}", file=sys.stderr)
         sys.exit(1)
@@ -129,7 +174,12 @@ def main():
 
     if errors:
         sys.exit(1)
-    print("✅ All messages delivered.", file=sys.stderr)
+
+    # Persist sent links only after all messages delivered successfully
+    sent_links = _load_sent_links()
+    sent_links.update(new_links)
+    _save_sent_links(sent_links)
+    print(f"✅ All messages delivered. Cache updated (+{len(new_links)} links).", file=sys.stderr)
 
 
 if __name__ == "__main__":

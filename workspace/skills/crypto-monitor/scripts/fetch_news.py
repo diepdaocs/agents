@@ -1,11 +1,35 @@
 #!/usr/bin/env python3
 """Fetch recent crypto news headlines from public RSS feeds. No API key required."""
 
+import json
+import os
 import sys
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+
+# ── Sent-links dedup cache ────────────────────────────────────────────────────
+SENT_CACHE_FILE = os.path.expanduser("~/.openclaw/news_cache/crypto_sent_links.json")
+SENT_CACHE_MAX  = 1000
+
+
+def _load_sent_links():
+    try:
+        with open(SENT_CACHE_FILE) as f:
+            data = json.load(f)
+        return set(data) if isinstance(data, list) else set()
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
+
+
+def _save_sent_links(links: set):
+    os.makedirs(os.path.dirname(SENT_CACHE_FILE), exist_ok=True)
+    lst = list(links)
+    if len(lst) > SENT_CACHE_MAX:
+        lst = lst[-SENT_CACHE_MAX:]
+    with open(SENT_CACHE_FILE, "w") as f:
+        json.dump(lst, f)
 
 FEEDS = [
     ("CoinDesk",      "https://www.coindesk.com/arc/outboundfeeds/rss/"),
@@ -63,8 +87,17 @@ def main():
     for name, url in FEEDS:
         all_items.extend(fetch_feed(name, url))
 
-    macro_items = [i for i in all_items if is_macro(i)]
-    other_items = [i for i in all_items if not is_macro(i)]
+    sent_links = _load_sent_links()
+    new_links  = set()
+
+    # Filter to unseen items only
+    fresh_items = [i for i in all_items if not i.get("link") or i["link"] not in sent_links]
+    skipped = len(all_items) - len(fresh_items)
+    if skipped:
+        print(f"[dedup] Skipped {skipped} already-sent item(s).", file=sys.stderr)
+
+    macro_items = [i for i in fresh_items if is_macro(i)]
+    other_items = [i for i in fresh_items if not is_macro(i)]
 
     print(f"=== MACRO / HIGH-IMPACT NEWS ({len(macro_items)} items) ===")
     if macro_items:
@@ -74,14 +107,22 @@ def main():
                 print(f"  {item['desc'][:150]}...")
             if item["pub"]:
                 print(f"  Published: {item['pub']}")
+            if item.get("link"):
+                new_links.add(item["link"])
     else:
         print("No macro headlines detected in latest feed items.")
 
     print(f"\n=== OTHER RECENT HEADLINES ({len(other_items)} items) ===")
     for item in other_items[:10]:
         print(f"[{item['source']}] {item['title']}")
+        if item.get("link"):
+            new_links.add(item["link"])
 
     print(f"\nFetched at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+
+    # Persist seen links
+    sent_links.update(new_links)
+    _save_sent_links(sent_links)
 
 
 if __name__ == "__main__":
