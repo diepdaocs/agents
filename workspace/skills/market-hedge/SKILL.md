@@ -166,47 +166,61 @@ Send the full report via:
 openclaw sessions send --message "YOUR_REPORT" --session-key "telegram:6202550149"
 ```
 
-Use this message format:
+**IMPORTANT: Telegram formatting rules**
+- Keep each field on its own line
+- Use SHORT, punchy sentences — max 1 line per field
+- No prose paragraphs — scannable bullets only
+- Split into multiple `openclaw sessions send` calls if total length > 3500 chars
+- Use Telegram markdown: *bold* for headers, `code` for instrument tickers
 
+Use this exact message format (3 separate messages):
+
+**Message 1 — Summary + Themes**
 ```
-🛡️ MACRO HEDGE REPORT — [DATE]
+🛡️ *MACRO HEDGE — [DATE]*
 
-📊 MACRO SUMMARY
-• [bullet 1]
-• [bullet 2]
-• ...
+📊 *SUMMARY*
+• [1-line bullet]
+• [1-line bullet]
+• [1-line bullet]
 
-🔑 KEY THEMES
-Geopolitics: ...
-Inflation: ...
-Liquidity: ...
-Supply: ...
-
-⚔️ HEDGING STRATEGIES
-
-[Strategy 1 Name]
-Thesis: ...
-Analog: ...
-Trade: ...
-Instruments: ...
-Timeframe: ...
-Trigger: ...
-Risk: ...
-
-[Strategy 2 Name]
-...
-
-🇻🇳 VIETNAM IMPACT
-VNIndex: ...
-FX (VND): ...
-Exports: ...
-
-☕ COFFEE (ROBUSTA) PLAYBOOK
-Inventory: ...
-Weather: ...
-Trade: ...
-
-🎯 CONFIDENCE: [High/Medium/Low] — [reason]
+🔑 *KEY THEMES*
+🌍 Geo: [1 line]
+📈 Inflation: [1 line]
+💧 Liquidity: [1 line]
+🚢 Supply: [1 line]
 ```
 
-Split into multiple messages if the report exceeds Telegram's 4096-character limit.
+**Message 2 — Hedging Strategies (one block per strategy)**
+```
+⚔️ *HEDGING STRATEGIES*
+
+*[Strategy Name]*
+↳ Thesis: [1 line]
+↳ Analog: [past event]
+↳ Trade: LONG/SHORT [asset]
+↳ Via: `[TICKER]` / [ETF name]
+↳ Horizon: [e.g. 0–3 months]
+↳ Trigger: [specific condition]
+↳ Kills trade if: [invalidation]
+
+*[Strategy Name]*
+↳ ...
+```
+
+**Message 3 — Vietnam + Coffee + Confidence**
+```
+🇻🇳 *VIETNAM*
+• VNIndex: [1 line]
+• VND: [1 line]
+• Exports: [1 line]
+
+☕ *ROBUSTA PLAYBOOK*
+• Inventory: [signal]
+• Weather: [signal]
+• Trade: LONG/SHORT `RK` — [reason]
+• Trigger: [specific condition]
+
+🎯 *CONFIDENCE: [HIGH/MEDIUM/LOW]*
+[1-line reason]
+```
