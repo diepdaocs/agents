@@ -11,3 +11,6 @@ workspace/skills/*/test_output/
 
 # Workspace memory
 workspace/memory
+
+# Claude Code local session data
+.claude/
