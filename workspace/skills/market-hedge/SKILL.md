@@ -158,24 +158,22 @@ For each:
 - No generic explanations
 - Think like a hedge fund PM, not a journalist
 
-### 3. Send to Telegram
+### 3. Save report to file
 
-Send the full report via:
+Write the full report to:
 
-```bash
-openclaw sessions send --message "YOUR_REPORT" --session-key "telegram:6202550149"
+```
+~/code/agents/workspace/market_hedge_report.txt
 ```
 
-**IMPORTANT: Telegram formatting rules**
+**Formatting rules (Telegram Markdown):**
 - Keep each field on its own line
 - Use SHORT, punchy sentences — max 1 line per field
 - No prose paragraphs — scannable bullets only
-- Split into multiple `openclaw sessions send` calls if total length > 3500 chars
 - Use Telegram markdown: *bold* for headers, `code` for instrument tickers
 
-Use this exact message format (3 separate messages):
+Use this exact format:
 
-**Message 1 — Summary + Themes**
 ```
 🛡️ *MACRO HEDGE — [DATE]*
 
@@ -189,10 +187,7 @@ Use this exact message format (3 separate messages):
 📈 Inflation: [1 line]
 💧 Liquidity: [1 line]
 🚢 Supply: [1 line]
-```
 
-**Message 2 — Hedging Strategies (one block per strategy)**
-```
 ⚔️ *HEDGING STRATEGIES*
 
 *[Strategy Name]*
@@ -204,12 +199,6 @@ Use this exact message format (3 separate messages):
 ↳ Trigger: [specific condition]
 ↳ Kills trade if: [invalidation]
 
-*[Strategy Name]*
-↳ ...
-```
-
-**Message 3 — Vietnam + Coffee + Confidence**
-```
 🇻🇳 *VIETNAM*
 • VNIndex: [1 line]
 • VND: [1 line]
@@ -224,3 +213,11 @@ Use this exact message format (3 separate messages):
 🎯 *CONFIDENCE: [HIGH/MEDIUM/LOW]*
 [1-line reason]
 ```
+
+### 4. Send to Telegram
+
+```bash
+python3 ~/code/agents/workspace/skills/market-hedge/scripts/send_to_telegram.py
+```
+
+This script reads `market_hedge_report.txt` and sends it to Telegram, splitting into chunks automatically.

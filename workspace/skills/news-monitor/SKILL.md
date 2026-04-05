@@ -46,9 +46,9 @@ Map the user's request to a session:
 
 | Request | Session |
 |---------|---------|
-| morning briefing / 7:30 AM | `morning` |
-| afternoon / midday / 1 PM | `afternoon` |
-| evening / 7 PM | `evening` |
+| morning briefing / 6 AM | `morning` |
+| afternoon / midday / 12 PM | `afternoon` |
+| evening / 6 PM | `evening` |
 | night / 10 PM | `night` |
 
 Run the news monitor:
@@ -73,10 +73,10 @@ python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morn
 
 | Time SGT | Session | Cron (SGT local) |
 |----------|---------|------------------|
-| 7:30 AM  | morning   | `30 7 * * *`  |
-| 1:00 PM  | afternoon | `0 13 * * *`  |
-| 7:00 PM  | evening   | `0 19 * * *`  |
-| 10:00 PM | night     | `0 22 * * *`  |
+| 6:00 AM  | morning   | `0 6 * * *`  |
+| 12:00 PM | afternoon | `0 12 * * *` |
+| 6:00 PM  | evening   | `0 18 * * *` |
+| 10:00 PM | night     | `0 22 * * *` |
 
 ## Cron Names
 
