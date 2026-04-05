@@ -11,6 +11,7 @@ workspace/skills/*/test_output/
 
 # Workspace memory
 workspace/memory
+workspace/market_hedge_report.txt
 
 # Claude Code local session data
 .claude/
