@@ -13,5 +13,14 @@ workspace/skills/*/test_output/
 workspace/memory
 workspace/market_hedge_report.txt
 
+# Generated skill/artifact outputs
+workspace/*.skill
+workspace/*-data.json
+
+# Local-only skill worktrees not ready to track
+workspace/skills/market-watch/
+workspace/skills/weekly-jobs-report/
+workspace/skills/weekly-sector-report/
+
 # Claude Code local session data
 .claude/
