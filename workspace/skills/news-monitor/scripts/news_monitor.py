@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-News monitor — fetch curated news and deliver to Telegram.
+News monitor — fetch curated news, summarize each topic, and deliver top links to Telegram.
 
 Usage:
-    python3 news_monitor.py [session]  # session: morning|afternoon|evening|night
+    python3 news_monitor.py [session]  # session: morning|evening
     python3 news_monitor.py --test     # dry-run: print message, skip Telegram send
 """
 
@@ -44,8 +44,11 @@ def _save_sent_links(links: set):
 
 
 def _filter_new(items, sent_links):
-    """Return only items whose link has not been sent before."""
-    return [i for i in items if i.get("link") and i["link"] not in sent_links]
+    """Prefer unseen items, but always keep the best available item per topic."""
+    unseen = [i for i in items if i.get("link") and i["link"] not in sent_links]
+    if unseen:
+        return unseen
+    return items[:1] if items else []
 
 # ── Telegram config ──────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = "8625186050:AAGJ-BfSs3v4intvZCg7bH3fGE2SIV-oHcA"
@@ -55,10 +58,8 @@ TELEGRAM_API       = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMess
 SGT = timezone(timedelta(hours=8))
 
 SESSION_LABELS = {
-    "morning":   "🌅 Morning Briefing",
-    "afternoon": "☀️ Afternoon Update",
-    "evening":   "🌆 Evening Round-up",
-    "night":     "🌙 Night Digest",
+    "morning": "🌅 Morning Briefing",
+    "evening": "🌆 Evening Round-up",
 }
 
 
@@ -82,15 +83,13 @@ def send_telegram(text):
 # ── Message builder ──────────────────────────────────────────────────────────
 
 GROUPS = [
-    (["hackernews", "engblogs"],          "Part 1 — HackerNews · Eng Blogs"),
-    (["tech", "ai"],                      "Part 2 — Tech · AI"),
-    (["finance", "coffee", "blockchain"], "Part 3 — Finance · Coffee · Blockchain"),
-    (["tennis", "soccer"],               "Part 4 — Tennis · Soccer"),
+    (["hackernews", "engblogs", "tech", "ai"], "Top links — Builder / AI / Tech"),
+    (["finance", "coffee", "blockchain", "tennis", "soccer"], "Top links — Markets / Personal"),
 ]
 
 
 def build_messages(session="morning"):
-    """Build Telegram messages grouped by theme. Returns (messages, new_links)."""
+    """Build concise Telegram topic summaries with top links. Returns (messages, new_links)."""
     sgt_now  = datetime.now(SGT)
     time_str = sgt_now.strftime("%a %b %d %Y · %I:%M %p SGT")
     label    = SESSION_LABELS.get(session, "📰 News Update")
@@ -98,6 +97,7 @@ def build_messages(session="morning"):
     header = (
         f"📰 <b>NEWS BRIEFING</b> · <b>{label}</b>\n"
         f"<i>{time_str}</i>\n"
+        f"<i>Topic summary first · top links underneath · fetched from source pages</i>\n"
     )
     sep = "\n─────────────────────\n"
 
@@ -125,7 +125,7 @@ def build_messages(session="morning"):
         sections = []
         for k in keys:
             items = filtered.get(k, [])
-            sections.append(fetch_news.format_topic_html(k, items))
+            sections.append(fetch_news.format_topic_summary_html(k, items))
         body = sep.join(sections)
         msg  = header + f"<b>{part_label}</b>" + sep + body
         foot = f"\n{sep}<i>Official sources only · fact-checked ✅=Tier1 ✓=Tier2</i>"

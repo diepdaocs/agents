@@ -1,13 +1,14 @@
 # News Monitor Skill
 
 ## Overview
-Automated news monitoring and delivery system for 6 topics: tech, AI, finance, blockchain, tennis (Carlos Alcaraz), and soccer (FC Barcelona).
+Automated news monitoring and delivery system that fetches source URLs, summarizes the top link per topic, and explains why it matters.
 
 ## Features
 - Fact-checked news from reputable sources
-- Scheduled delivery at 7:30 AM, 1 PM, 7 PM, and 10 PM SGT
+- Scheduled delivery at 7:00 AM and 7:00 PM SGT
 - Telegram integration
-- Multiple source verification
+- Fetches the source pages for shortlisted links before summarizing
+- Why-it-matters note for each top link
 
 ## Quick Setup
 1. Configure Telegram bot in send-telegram.sh

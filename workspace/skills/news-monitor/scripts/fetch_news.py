@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 HEADERS = {"User-Agent": "news-monitor-skill/1.0 (personal-agent)"}
 MAX_PER_FEED = 12
 MAX_PER_TOPIC = 3
+TOP_LINKS_PER_TOPIC = 2
 
 # Source credibility tiers for fact-checking display
 TIER1_SOURCES = {
@@ -41,6 +42,7 @@ TOPICS = {
             ("The Verge",    "https://www.theverge.com/rss/index.xml"),
             ("Ars Technica", "https://feeds.arstechnica.com/arstechnica/index"),
             ("Wired",        "https://www.wired.com/feed/rss"),
+            ("Google News",  "https://news.google.com/rss/search?q=technology+software+when:1d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "tech", "software", "hardware", "startup", "app", "gadget", "device",
@@ -59,6 +61,7 @@ TOPICS = {
             ("The Verge AI",  "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
             ("MIT Tech Review", "https://www.technologyreview.com/feed/"),
             ("Ars Technica",  "https://feeds.arstechnica.com/arstechnica/index"),
+            ("Google News",   "https://news.google.com/rss/search?q=AI+OR+%22artificial+intelligence%22+OR+LLM+when:1d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "artificial intelligence", "machine learning", " ai ", "gpt", "llm",
@@ -75,7 +78,8 @@ TOPICS = {
         "feeds": [
             ("The Economist",  "https://www.economist.com/finance-and-economics/rss.xml"),
             ("Bloomberg",      "https://feeds.bloomberg.com/markets/news.rss"),
-            ("Barrons",        "https://www.barrons.com/articles?type=article&format=rss"),
+            ("CNBC",           "https://www.cnbc.com/id/100003114/device/rss/rss.html"),
+            ("Google News",    "https://news.google.com/rss/search?q=markets+finance+when:1d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "stock", "market", "economy", "gdp", "inflation", "interest rate", "fed ",
@@ -90,10 +94,11 @@ TOPICS = {
         "label": "Blockchain and Crypto",
         "emoji": "⛓️",
         "feeds": [
-            ("CoinDesk",     "https://www.coindesk.com/arc/outboundfeeds/rss/"),
+            ("CoinDesk",      "https://www.coindesk.com/arc/outboundfeeds/rss/"),
             ("CoinTelegraph", "https://cointelegraph.com/rss"),
-            ("Decrypt",      "https://decrypt.co/feed"),
-            ("TheBlock",     "https://www.theblock.co/rss.xml"),
+            ("Decrypt",       "https://decrypt.co/feed"),
+            ("TheBlock",      "https://www.theblock.co/rss.xml"),
+            ("Google News",   "https://news.google.com/rss/search?q=bitcoin+OR+ethereum+OR+blockchain+when:1d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "bitcoin", "ethereum", "blockchain", "crypto", "defi", "nft", "web3",
@@ -120,6 +125,7 @@ TOPICS = {
             ("Meta Engineering",   "https://engineering.fb.com/feed/"),
             ("Microsoft Dev Blog", "https://devblogs.microsoft.com/engineering-at-microsoft/feed/"),
             ("OpenAI Blog",        "https://openai.com/news/rss.xml"),
+            ("Google News",        "https://news.google.com/rss/search?q=engineering+blog+developer+infrastructure+when:3d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "engineering", "infrastructure", "system", "architecture", "performance",
@@ -134,11 +140,9 @@ TOPICS = {
         "label": "Coffee & Robusta Futures",
         "emoji": "☕",
         "feeds": [
-            ("Reuters Commodities", "https://feeds.reuters.com/reuters/commoditiesNews"),
-            ("Reuters Business",    "https://feeds.reuters.com/reuters/businessNews"),
             ("Investing.com",       "https://www.investing.com/rss/news_14.rss"),
             ("VnExpress",           "https://e.vnexpress.net/rss/business.rss"),
-            ("Google News",         "https://news.google.com/rss/search?q=robusta+coffee+price&hl=en-US&gl=US&ceid=US:en"),
+            ("Google News",         "https://news.google.com/rss/search?q=robusta+coffee+price+OR+arabica+coffee+futures+when:3d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "coffee", "robusta", "arabica", "coffee futures", "coffee price",
@@ -156,6 +160,7 @@ TOPICS = {
         "feeds": [
             ("ESPN Tennis",      "https://www.espn.com/espn/rss/tennis/news"),
             ("BBC Sport Tennis", "https://feeds.bbci.co.uk/sport/tennis/rss.xml"),
+            ("Google News",      "https://news.google.com/rss/search?q=Carlos+Alcaraz+when:3d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "alcaraz", "carlos alcaraz", "tennis", "atp", "wta", "wimbledon",
@@ -169,10 +174,9 @@ TOPICS = {
         "label": "Soccer — FC Barcelona",
         "emoji": "⚽",
         "feeds": [
-            ("Goal.com",           "https://www.goal.com/en/rss"),
-            ("FC Barcelona",       "https://www.fcbarcelona.com/en/rss"),
             ("ESPN Soccer",        "https://www.espn.com/espn/rss/soccer/news"),
             ("BBC Sport Football", "https://feeds.bbci.co.uk/sport/football/rss.xml"),
+            ("Google News",        "https://news.google.com/rss/search?q=FC+Barcelona+OR+Barca+when:1d&hl=en-SG&gl=SG&ceid=SG:en"),
         ],
         "keywords": [
             "barcelona", "barca", "fc barcelona", "laliga", "la liga",
@@ -366,7 +370,13 @@ def fetch_topic(topic_key):
     relevant = [i for i in all_items if is_relevant(i, config)]
     relevant = dedup(relevant)
     relevant.sort(key=lambda i: score_item(i, config), reverse=True)
-    return relevant[:MAX_PER_TOPIC]
+    if relevant:
+        return relevant[:MAX_PER_TOPIC]
+
+    # Fallback: if strict keyword filtering yields nothing, keep the best source-ranked items.
+    fallback = dedup(all_items)
+    fallback.sort(key=lambda i: score_item(i, config), reverse=True)
+    return fallback[:MAX_PER_TOPIC]
 
 
 def fetch_all():
@@ -377,8 +387,93 @@ def fetch_all():
     return results
 
 
-def format_topic_html(topic_key, items):
-    """Format a topic section as Telegram HTML."""
+def _article_text_snippets(url, max_paragraphs=2):
+    if not url:
+        return []
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            raw = resp.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return []
+
+    raw = re.sub(r"<script[\s\S]*?</script>", " ", raw, flags=re.I)
+    raw = re.sub(r"<style[\s\S]*?</style>", " ", raw, flags=re.I)
+    paras = re.findall(r"<p[^>]*>(.*?)</p>", raw, flags=re.I | re.S)
+    cleaned = []
+    for p in paras:
+        text = _strip_html(p)
+        if len(text) >= 80:
+            cleaned.append(text)
+        if len(cleaned) >= max_paragraphs:
+            break
+    return cleaned
+
+
+def summarize_item(item):
+    title = item.get("title", "").strip()
+    desc = item.get("desc", "").strip()
+    story_text = item.get("hn_story_text", "").strip()
+    snippets = _article_text_snippets(item.get("link", ""))
+
+    parts = []
+    if desc:
+        parts.append(desc)
+    if story_text:
+        parts.append(story_text)
+    parts.extend(snippets)
+
+    text = " ".join(parts)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        summary = "No clean article summary available from the source page."
+    else:
+        summary = text[:220].rsplit(" ", 1)[0].strip()
+        if len(text) > len(summary):
+            summary += "…"
+
+    lower = (title + " " + text).lower()
+    significance = []
+    for bucket, keywords in [
+        ("product/platform move", ["launch", "release", "rollout", "platform", "api", "model", "product"]),
+        ("market/industry signal", ["market", "revenue", "growth", "demand", "supply", "earnings", "funding"]),
+        ("risk/policy shift", ["regulation", "security", "tariff", "ban", "lawsuit", "privacy", "compliance"]),
+        ("engineering relevance", ["infrastructure", "developer", "cloud", "chip", "data", "automation", "open source"]),
+    ]:
+        if any(k in lower for k in keywords):
+            significance.append(bucket)
+    if not significance:
+        significance.append("worth watching for downstream impact")
+
+    item["summary"] = summary
+    uniq_significance = list(dict.fromkeys(significance))[:2]
+    item["significance"] = ", ".join(uniq_significance)
+    return item
+
+
+def summarize_topic(items):
+    enriched = [summarize_item(i.copy()) for i in items[:TOP_LINKS_PER_TOPIC]]
+    summaries = [i.get("summary", "") for i in enriched if i.get("summary")]
+    summary_text = " ".join(summaries)
+    summary_text = re.sub(r"\s+", " ", summary_text).strip()
+    if not summary_text:
+        topic_summary = "No strong theme right now."
+    else:
+        topic_summary = summary_text[:260].rsplit(" ", 1)[0].strip()
+        if len(summary_text) > len(topic_summary):
+            topic_summary += "…"
+
+    sigs = []
+    for item in enriched:
+        sig = item.get("significance", "")
+        if sig:
+            sigs.extend([s.strip() for s in sig.split(",") if s.strip()])
+    topic_significance = ", ".join(list(dict.fromkeys(sigs))[:2]) or "worth watching for downstream impact"
+    return enriched, topic_summary, topic_significance
+
+
+def format_topic_summary_html(topic_key, items):
+    """Format a topic-level summary followed by top links."""
     config = TOPICS[topic_key]
     emoji = config["emoji"]
     label = config["label"]
@@ -388,28 +483,26 @@ def format_topic_html(topic_key, items):
 
     lines = [f"{emoji} <b>{esc(label)}</b>"]
     if not items:
-        lines.append("  No news available.")
-    else:
-        for item in items:
-            tag = credibility_tag(item)
-            title = esc(item["title"])
-            source = esc(item["source"])
-            desc = esc(item["desc"][:120]) if item["desc"] else ""
-            link = item.get("link", "").strip()
-            title_html = f'<a href="{link}">{title}</a>' if link else title
-            lines.append(f"\n• <b>{title_html}</b>")
-            if desc:
-                lines.append(f"  {desc}")
-            # HN story body (Ask HN / Show HN posts)
-            story_text = item.get("hn_story_text", "")
-            if story_text:
-                lines.append(f"  <i>{esc(story_text[:150])}</i>")
-            # HN top comments
-            for c in item.get("hn_comments", []):
-                lines.append(f"  💬 <b>{esc(c['author'])}</b>: {esc(c['text'])}")
-            lines.append(f"  <i>{tag} {source}</i>")
+        lines.append("• Summary: No strong link right now.")
+        return "\n".join(lines)
+
+    chosen, topic_summary, topic_significance = summarize_topic(items)
+    lines.append(f"• Summary: {esc(topic_summary)}")
+    lines.append(f"  Why it matters: {esc(topic_significance)}")
+    lines.append("  Top links:")
+    for item in chosen:
+        tag = credibility_tag(item)
+        title = esc(item["title"])
+        source = esc(item["source"])
+        link = item.get("link", "").strip()
+        title_html = f'<a href="{link}">{title}</a>' if link else title
+        lines.append(f"  - {title_html} <i>({tag} {source})</i>")
 
     return "\n".join(lines)
+
+
+def format_topic_html(topic_key, items):
+    return format_topic_summary_html(topic_key, items)
 
 
 if __name__ == "__main__":

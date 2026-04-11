@@ -1,6 +1,6 @@
 ---
 name: news-monitor
-description: "Deliver curated news briefing for 9 topics: HackerNews top stories, engineering blogs (Google/Meta/Microsoft/OpenAI/Anthropic), tech, AI, finance, coffee/robusta futures, blockchain, tennis (Alcaraz), soccer (Barcelona). Sends to Telegram at 7:30 AM, 1 PM, 7 PM, 10 PM SGT. Use when asked to send news briefing, morning/afternoon/evening/night news update, or run news monitor."
+description: "Deliver a curated Telegram news briefing for 9 topics: HackerNews, engineering blogs, tech, AI, finance, coffee/robusta futures, blockchain, tennis (Alcaraz), and soccer (Barcelona). Fetch the article URLs, summarize the top link per topic, explain why it matters, and send twice daily at 7 AM and 7 PM SGT. Use when asked to send or refactor the news briefing."
 metadata:
   {
     "openclaw":
@@ -13,7 +13,7 @@ metadata:
 
 # News Monitor
 
-Fetches news from official RSS feeds and APIs only — no junk or fake news. Delivers to Telegram via three messages grouped by theme.
+Fetches news from official RSS feeds first, uses Google News search feeds as fallback discovery when direct feeds are thin, opens the shortlisted article URLs, then sends a concise summary for each topic followed by that topic's top links.
 
 ## Topics & Sources
 
@@ -35,10 +35,19 @@ Fetches news from official RSS feeds and APIs only — no junk or fake news. Del
 
 | Message | Topics |
 |---------|--------|
-| Part 1 | HackerNews · Engineering Blogs |
-| Part 2 | Tech · AI |
-| Part 3 | Finance · Coffee & Robusta Futures · Blockchain |
-| Part 4 | Tennis · Soccer |
+| Part 1 | HackerNews · Engineering Blogs · Tech · AI |
+| Part 2 | Finance · Coffee & Robusta Futures · Blockchain · Tennis · Soccer |
+
+Each topic should include:
+- 1 short topic-level summary synthesized from the top items
+- 1 short why-it-matters line for the topic
+- top links listed underneath the summary
+
+Source ladder:
+1. direct topic feeds / official blogs / direct RSS
+2. Google News search RSS for gap-filling and thin topics
+3. if filtering is too strict, fall back to the best source-ranked item instead of returning nothing
+4. when all top candidates were seen recently, still show the best current item for that topic instead of leaving the section empty
 
 ## Execution
 
@@ -46,10 +55,9 @@ Map the user's request to a session:
 
 | Request | Session |
 |---------|---------|
-| morning briefing / 6 AM | `morning` |
-| afternoon / midday / 12 PM | `afternoon` |
-| evening / 6 PM | `evening` |
-| night / 10 PM | `night` |
+| morning briefing / 7 AM | `morning` |
+| evening briefing / 7 PM | `evening` |
+| daily news briefing | `morning` or `evening` depending on context |
 
 Run the news monitor:
 ```bash
@@ -59,9 +67,7 @@ python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py [ses
 Examples:
 ```bash
 python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morning
-python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py afternoon
 python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py evening
-python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py night
 ```
 
 Dry-run (no Telegram send, just print):
@@ -73,14 +79,10 @@ python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morn
 
 | Time SGT | Session | Cron (SGT local) |
 |----------|---------|------------------|
-| 6:00 AM  | morning   | `0 6 * * *`  |
-| 12:00 PM | afternoon | `0 12 * * *` |
-| 6:00 PM  | evening   | `0 18 * * *` |
-| 10:00 PM | night     | `0 22 * * *` |
+| 7:00 AM  | morning | `0 7 * * *` |
+| 7:00 PM  | evening | `0 19 * * *` |
 
 ## Cron Names
 
 - `news-morning`
-- `news-afternoon`
 - `news-evening`
-- `news-night`

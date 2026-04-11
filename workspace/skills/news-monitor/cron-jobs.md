@@ -1,24 +1,16 @@
 # News Monitor Cron Jobs
 
 ## Scheduled Delivery Times
-- 7:30 AM SGT: Morning brief
-- 1:00 PM SGT: Midday update  
+- 7:00 AM SGT: Morning brief
 - 7:00 PM SGT: Evening brief
-- 10:00 PM SGT: Night brief
 
 ## Cron Schedule
 ```
-# 7:30 AM SGT (23:30 UTC previous day)
-30 23 * * * /home/noname/code/agents/workspace/skills/news-monitor/scripts/fetch-and-send.sh morning
+# 7:00 AM SGT
+0 7 * * * python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py morning
 
-# 1:00 PM SGT (05:00 UTC)
-0 5 * * * /home/noname/code/agents/workspace/skills/news-monitor/scripts/fetch-and-send.sh midday
-
-# 7:00 PM SGT (11:00 UTC)
-0 11 * * * /home/noname/code/agents/workspace/skills/news-monitor/scripts/fetch-and-send.sh evening
-
-# 10:00 PM SGT (14:00 UTC)
-0 14 * * * /home/noname/code/agents/workspace/skills/news-monitor/scripts/fetch-and-send.sh night
+# 7:00 PM SGT
+0 19 * * * python3 ~/code/agents/workspace/skills/news-monitor/scripts/news_monitor.py evening
 ```
 
 ## Installation
